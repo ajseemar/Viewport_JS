@@ -58,6 +58,7 @@ class Game {
 
     render() {
         // this.map.render();
+        cc.clearRect(0, 0, c.width, c.height);
         this.camera.render(this.map.grid);
         this.player.render();
     }
@@ -78,7 +79,7 @@ class Camera {
 
         this.cellCount = cellCount;
 
-        this.size = Math.floor(720 / 25);
+        this.size = Math.ceil(720 / 25);
 
         this.following = null;
     }
@@ -98,12 +99,12 @@ class Camera {
     }
 
     update() {
-        // this.following.screenX = this.width / 2;
-        // this.following.screenY = this.height / 2;
-        this.following.screenPosition = this.worldToScreen(this.following.position.x, this.following.position.y);
+        this.following.screenX = this.width / 2;
+        this.following.screenY = this.height / 2;
+        // this.following.screenPosition = this.worldToScreen(this.following.position.x, this.following.position.y);
         // make the camera follow the sprite
-        this.position.x = this.following.screenPosition.x - this.width / 2;
-        this.position.y = this.following.screenPosition.y - this.height / 2;
+        this.position.x = this.following.screenX - this.width / 2;
+        this.position.y = this.following.screenY - this.height / 2;
         // clamp values
         this.position.x = Math.max(0, Math.min(this.position.x, this.maxX));
         this.position.y = Math.max(0, Math.min(this.position.y, this.maxY));
@@ -112,16 +113,16 @@ class Camera {
         // and we have to change its screen coordinates
 
         // left and right sides
-        // if (this.following.position.x < this.width / 2 ||
-        //     this.following.position.x > this.maxX + this.width / 2) {
-        //     this.following.screenX = this.following.position.x - this.position.x;
-        // }
-        // // top and bottom sides
-        // if (this.following.position.y < this.height / 2 ||
-        //     this.following.position.y > this.maxY + this.height / 2) {
-        //     this.following.screenY = this.following.position.y - this.position.y;
+        if (this.following.position.x < this.width / 2 ||
+            this.following.position.x > this.maxX + this.width / 2) {
+            this.following.screenX = this.following.position.x - this.position.x;
+        }
+        // top and bottom sides
+        if (this.following.position.y < this.height / 2 ||
+            this.following.position.y > this.maxY + this.height / 2) {
+            this.following.screenY = this.following.position.y - this.position.y;
 
-        // }
+        }
     }
 
     render(grid) {
@@ -147,11 +148,11 @@ class Camera {
                 // else cc.fillStyle = "#00f";
 
                 // // cc.fillRect(i * this.size, j * this.size, this.size, this.size);
-                // let x = (j - startCol) * this.size + offsetX;
-                // let y = (i - startRow) * this.size + offsetY;
-
-                // cc.fillRect(x, y, this.size, this.size);
-                grid[i][j].render();
+                let x = (j - startCol) * this.size + offsetX;
+                let y = (i - startRow) * this.size + offsetY;
+                cc.fillStyle = grid[i][j].color;
+                cc.fillRect(x, y, this.size, this.size);
+                // grid[i][j].render(offsetX, offsetY);
             }
         }
     }
