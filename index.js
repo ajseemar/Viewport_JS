@@ -34,10 +34,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 class Game {
     constructor(vpWidth, vpHeight, cellCount) {
-        // this.cellSize = vpWidth / cellCount; // renders entire map
+
+        // this.cellSize = c.width / cellCount; // renders entire map
         this.cellSize = 25; // for camera
-        this.width = cellCount * this.cellSize;
-        this.height = cellCount * this.cellSize;
+        // this.width = cellCount * this.cellSize;
+        // this.height = cellCount * this.cellSize;
 
         // this.camera = new Camera(vpWidth, vpHeight, this.width, this.height, cellCount);
         this.map = new Map(cellCount, this.cellSize);
@@ -47,7 +48,17 @@ class Game {
         this.player = new Player(this.cellSize, this.inputHandler, this.cellSize, cellCount);
         // this.camera.follow(this.player);
 
+        window.addEventListener('resize', this.resize.bind(this));
+        this.resize();
+
         this.initialTime = Date.now();
+    }
+
+    resize() {
+        c.width = window.innerWidth - 4;
+        c.height = window.innerHeight - 4;
+        this.width = c.width;
+        this.height = c.height;
     }
 
 
@@ -73,10 +84,10 @@ class Viewport {
         this.cellSize = cellSize;
         this.cellCount = cellCount;
 
-        this.screen = {
-            x: c.width,
-            y: c.height
-        };
+        // this.screen = {
+        //     x: c.width,
+        //     y: c.height
+        // };
         this.startTile = {
             row: 0,
             col: 0
@@ -89,30 +100,56 @@ class Viewport {
             x: 0,
             y: 0
         };
+
+        this.resize();
+    }
+
+    resize() {
+        this.screen = {
+            x: c.width,
+            y: c.height
+        };
     }
 
     update(px, py) {
+        this.resize();
         this.offset.x = Math.floor(this.screen.x / 2 - px); // - this.screen.x / 2;
         this.offset.y = Math.floor(this.screen.y / 2 - py); // - this.screen.y / 2;
+        // debugger
         // this.offset.x = -px;
         // this.offset.y = -py
+        // const tile = {
+        //     row: Math.floor(py / this.cellSize),
+        //     col: Math.floor(px / this.cellSize)
+        // };
+        let row = Math.floor(py / this.cellSize);
+        let col = Math.floor(px / this.cellSize);
+
+        let maxHorizontalCells = Math.ceil(this.screen.x / this.cellSize);
+        let maxVerticalCells = Math.ceil(this.screen.y / this.cellSize);
+        // console.log(maxHorizontalCells, maxVerticalCells);
+        // console.log(this.screen.x / this.cellSize);
+        // console.log(this.screen.y / this.cellSize);
+
+        this.startTile.col = col - Math.floor(maxHorizontalCells / 2);
+        this.startTile.row = row - Math.floor(maxVerticalCells / 2);
+
+        // this.startTile.row = row - 1 - Math.ceil((this.screen.x / 2) / this.cellSize);
+        // this.startTile.col = col - 1 - Math.ceil((this.screen.y) / this.cellSize);
         // debugger
-        let tile = {
-            row: Math.floor(py / this.cellSize),
-            col: Math.floor(px / this.cellSize)
-        };
-
-        this.startTile.row = tile.row - 1 - Math.ceil((this.screen.x / 2) / this.cellSize);
-        this.startTile.col = tile.col - 1 - Math.ceil((this.screen.y / 2) / this.cellSize);
-
         if (this.startTile.row < 0) this.startTile.row = 0;
         if (this.startTile.col < 0) this.startTile.col = 0;
 
-        this.endTile.row = tile.row + 1 + Math.ceil((this.screen.x / 2) / this.cellSize);
-        this.endTile.col = tile.col + 1 + Math.ceil((this.screen.y / 2) / this.cellSize);
+        this.endTile.col = col + 1 + Math.floor(maxHorizontalCells / 2);
+        this.endTile.row = row + 1 + Math.floor(maxVerticalCells / 2);
 
-        if (this.endTile.row > this.cellCount) this.endTile.row = this.cellCount - 1;
-        if (this.endTile.col > this.cellCount) this.endTile.col = this.cellCount - 1;
+        // this.endTile.row = row + 1 + Math.ceil((this.screen.x / 2) / this.cellSize);
+        // this.endTile.col = col + 1 + Math.ceil((this.screen.y) / this.cellSize);
+        // debugger
+
+        if (this.endTile.row > this.cellCount) this.endTile.row = this.cellCount;
+        if (this.endTile.col > this.cellCount) this.endTile.col = this.cellCount;
+        // debugger
     }
 
     render(grid) {
@@ -236,6 +273,7 @@ class Map {
                 this.grid[i][j] = new Tile(i, j, this.cellSize);
             }
         }
+        window.grid = this.grid;
     }
 
     render() {
@@ -265,7 +303,12 @@ class Tile {
 
     render(offsetX, offsetY) {
         cc.fillStyle = this.color;
+        // debugger
         cc.fillRect(this.position.x + offsetX, this.position.y + offsetY, this.size, this.size);
+        cc.font = "8px Georgia";
+        cc.fillStyle = "#fff";
+        cc.fillText(`row: ${this.row}`, this.position.x + offsetX, this.position.y + offsetY + 5);
+        cc.fillText(`col: ${this.col}`, this.position.x + offsetX, this.position.y + offsetY + 10);
     }
 }
 
@@ -365,15 +408,16 @@ class Player {
         // const maxY = this.size * 100 * 3 - (c.height - 10 * (c.height / 100));
         this.position.x += this.velocity.x * dt;
         this.position.y += this.velocity.y * dt;
-        this.position.x = Math.max(0, Math.min(this.position.x, (this.cellCount - 1) * this.cellSize));
-        this.position.y = Math.max(0, Math.min(this.position.y, (this.cellCount - 1) * this.cellSize));
+        this.position.x = Math.max(0, Math.min(this.position.x, (this.cellCount) * this.cellSize));
+        this.position.y = Math.max(0, Math.min(this.position.y, (this.cellCount) * this.cellSize));
         // this.screenX = this.position.x;
         // this.screenY = this.position.y;
         // console.log(this.screenX, this.screenY);postition.
     }
 
     render(offsetX, offsetY) {
-        console.log(this.position.x + offsetX, this.position.y + offsetY);
+        // console.log(this.position.x + offsetX, this.position.y + offsetY);
+        // debugger
         cc.fillStyle = "#0ff";
         cc.beginPath();
         cc.arc(this.position.x + offsetX, this.position.y + offsetY, this.size, 0, Math.PI * 2)
