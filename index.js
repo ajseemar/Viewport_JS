@@ -36,27 +36,30 @@ class Game {
     constructor(vpWidth, vpHeight, cellCount) {
 
         // this.cellSize = c.width / cellCount; // renders entire map
-        this.cellSize = 25; // for camera
+        this.cellSize = 40; // for camera
         // this.width = cellCount * this.cellSize;
         // this.height = cellCount * this.cellSize;
 
         // this.camera = new Camera(vpWidth, vpHeight, this.width, this.height, cellCount);
         this.map = new Map(cellCount, this.cellSize);
 
+        this.resize();
         this.inputHandler = new InputManager();
         this.viewport = new Viewport(this.cellSize, cellCount);
         this.player = new Player(this.cellSize, this.inputHandler, this.cellSize, cellCount);
         // this.camera.follow(this.player);
 
         window.addEventListener('resize', this.resize.bind(this));
-        this.resize();
 
         this.initialTime = Date.now();
     }
 
     resize() {
-        c.width = window.innerWidth - 4;
-        c.height = window.innerHeight - 4;
+        const ratio = 16 / 9;
+        c.width = window.innerWidth;
+        c.height = window.innerHeight;
+        if (c.width > c.height / ratio) c.width = c.height * ratio;
+        else if (c.height > c.width / ration) c.height = c.width * ratio;
         this.width = c.width;
         this.height = c.height;
     }
@@ -140,16 +143,16 @@ class Viewport {
         if (this.startTile.row < 0) this.startTile.row = 0;
         if (this.startTile.col < 0) this.startTile.col = 0;
 
-        this.endTile.col = col + 1 + Math.floor(maxHorizontalCells / 2);
-        this.endTile.row = row + 1 + Math.floor(maxVerticalCells / 2);
+        this.endTile.col = col + 1 + Math.ceil(maxHorizontalCells / 2);
+        this.endTile.row = row + 1 + Math.ceil(maxVerticalCells / 2);
 
         // this.endTile.row = row + 1 + Math.ceil((this.screen.x / 2) / this.cellSize);
         // this.endTile.col = col + 1 + Math.ceil((this.screen.y) / this.cellSize);
         // debugger
 
+        // debugger
         if (this.endTile.row > this.cellCount) this.endTile.row = this.cellCount;
         if (this.endTile.col > this.cellCount) this.endTile.col = this.cellCount;
-        // debugger
     }
 
     render(grid) {
@@ -305,10 +308,10 @@ class Tile {
         cc.fillStyle = this.color;
         // debugger
         cc.fillRect(this.position.x + offsetX, this.position.y + offsetY, this.size, this.size);
-        cc.font = "8px Georgia";
+        cc.font = "10px Georgia";
         cc.fillStyle = "#fff";
-        cc.fillText(`row: ${this.row}`, this.position.x + offsetX, this.position.y + offsetY + 5);
-        cc.fillText(`col: ${this.col}`, this.position.x + offsetX, this.position.y + offsetY + 10);
+        cc.fillText(`row: ${this.row}`, this.position.x + offsetX, this.position.y + offsetY + 7);
+        cc.fillText(`col: ${this.col}`, this.position.x + offsetX, this.position.y + offsetY + this.size - 5);
     }
 }
 
